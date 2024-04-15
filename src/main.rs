@@ -79,7 +79,7 @@ impl<const N: usize> RawBakeryLock<N> {
             // W(c[0], 1) -po-> R(t[1], 0) -rb-> W(t[1], 1) -po-> R(c[0], 0) -rb-> W(c[0], 1)
             //
             // cycle, so SC fences are necessary somewhere along both `po` edges to forbid it. This
-            // fence covers the `W c -> R t` edge, while the one below covers the `R c -> W t` edge.
+            // fence covers the `W c -> R t` edge, while the one below covers the `W t -> R c` edge.
             sc_fence_1();
 
             let max_existing = self
@@ -104,7 +104,7 @@ impl<const N: usize> RawBakeryLock<N> {
         self.ticket[thread].store(ticket, Ordering::Relaxed);
 
         // This fence serves two distinct purposes:
-        // 1. It covers the `R c -> W t` edge of the store buffering scenario discussed above.
+        // 1. It covers the `W t -> R c` edge of the store buffering scenario discussed above.
         // 2. It synchronizes-with the acquire fence in the loop below to make sure that any
         //    threads observing the write to `choosing` below also observe our new ticket.
         sc_fence_2();
